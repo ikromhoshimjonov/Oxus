@@ -1,0 +1,105 @@
+{% extends "frontend/base.html" %}
+{% load static %}
+
+{% block title %}Register — OXUS{% endblock %}
+
+{% block extra_head %}
+<style>
+    .auth-layout {
+        margin-top: 3rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-layout">
+    <div class="auth-card">
+
+        <h2 class="auth-title">Register</h2>
+        <p class="auth-subtitle">Yangi hisob ochish uchun maʼlumotlarni kiriting.</p>
+
+        <form id="register-form">
+
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input class="form-control" id="reg-email" type="email" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Parol</label>
+                <input class="form-control" id="reg-password" type="password" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Parolni tasdiqlang</label>
+                <input class="form-control" id="reg-password2" type="password" required>
+            </div>
+
+            <div style="margin-top: 1.2rem;">
+                <button class="btn-primary" style="width: 100%;" type="submit">
+                    Create account
+                </button>
+            </div>
+
+            <div id="register-status" class="status"></div>
+
+        </form>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("register-form");
+        const statusBox = document.getElementById("register-status");
+
+        form.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            statusBox.textContent = "";
+            statusBox.className = "status";
+
+            const email = document.getElementById("reg-email").value.trim();
+            const password = document.getElementById("reg-password").value.trim();
+            const password2 = document.getElementById("reg-password2").value.trim();
+
+            if (password !== password2) {
+                statusBox.textContent = "Parollar mos emas.";
+                statusBox.classList.add("error");
+                return;
+            }
+
+            try {
+                const resp = await fetch("/api/v1/register/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const data = await resp.json();
+
+                if (!resp.ok) {
+                    statusBox.textContent = data.detail || "Xatolik yuz berdi.";
+                    statusBox.classList.add("error");
+                    return;
+                }
+
+                statusBox.textContent = "Hisob muvaffaqiyatli yaratildi!";
+                statusBox.classList.add("success");
+
+                setTimeout(() => {
+                    window.location.href = "/";
+                }, 1500);
+
+            } catch (err) {
+                statusBox.textContent = "Server bilan aloqa xatosi.";
+                statusBox.classList.add("error");
+            }
+        });
+    });
+</script>
+{% endblock %}
